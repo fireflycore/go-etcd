@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/fireflycore/go-utils/tlsx"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
@@ -23,7 +24,7 @@ func New(c *Conf) (*clientv3.Client, error) {
 	}
 
 	// 从配置生成 TLSConfig；tlsEnabled 表示是否启用 TLS。
-	tlsConfig, tlsEnabled, err := NewTLSConfig(c.Tls)
+	tlsConfig, tlsEnabled, err := tlsx.NewTLSConfig(c.Tls)
 	// TLS 配置构造失败时直接返回错误。
 	if err != nil {
 		return nil, err
