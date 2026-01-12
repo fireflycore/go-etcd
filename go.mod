@@ -2,7 +2,10 @@ module github.com/fireflycore/go-etcd
 
 go 1.25.1
 
-require go.etcd.io/etcd/client/v3 v3.6.6
+require (
+	github.com/fireflycore/go-utils v0.3.5
+	go.etcd.io/etcd/client/v3 v3.6.6
+)
 
 require (
 	github.com/coreos/go-semver v0.3.1 // indirect
