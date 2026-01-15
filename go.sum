@@ -4,8 +4,8 @@ github.com/coreos/go-systemd/v22 v22.6.0 h1:aGVa/v8B7hpb0TKl0MWoAavPDmHvobFe5R5z
 github.com/coreos/go-systemd/v22 v22.6.0/go.mod h1:iG+pp635Fo7ZmV/j14KUcmEyWF+0X7Lua8rrTWzYgWU=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/fireflycore/go-utils v0.3.5 h1:iczcnpjzvatg/C7KlzIJSQQCviJumoekeMt3nRhttu8=
-github.com/fireflycore/go-utils v0.3.5/go.mod h1:Sg9E/2bnNlSuvsO9zoobo4Qc+y7Xf/KSp3tQq+BjzBg=
+github.com/fireflycore/go-utils v0.3.6 h1:Cvc6S31p5lOsJTdJMxTrF7MYod1HdsLb7kYwHIbjLYE=
+github.com/fireflycore/go-utils v0.3.6/go.mod h1:Sg9E/2bnNlSuvsO9zoobo4Qc+y7Xf/KSp3tQq+BjzBg=
 github.com/go-logr/logr v1.4.3 h1:CjnDlHq8ikf6E492q6eKboGOC0T8CDaOvkHCIg8idEI=
 github.com/go-logr/logr v1.4.3/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
 github.com/go-logr/stdr v1.2.2 h1:hSWxHoqTgW2S2qGc0LTAI563KZ5YKYRhT3MFKZMbjag=
