@@ -2,6 +2,7 @@
 
 基于 etcd clientv3 的轻量封装，提供：
 - etcd client 初始化（Endpoints、可选用户名密码、可选 TLS 双向证书）
+- 基于 etcd 的服务注册与发现（`registry` 子包）
 
 ## 安装
 
@@ -68,3 +69,6 @@ cli, err := etcd.New(&etcd.Conf{
 - Endpoint：etcd 节点列表（如 127.0.0.1:2379）
 - Username/Password：用户名密码（同时配置时启用）
 - Tls：TLS 双向证书配置（同时配置三个文件路径时启用）
+
+### 附件指引
+- 服务注册与发现（registry）[registry/README.md](./registry/README.md)
