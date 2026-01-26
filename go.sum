@@ -4,8 +4,8 @@ github.com/coreos/go-systemd/v22 v22.6.0 h1:aGVa/v8B7hpb0TKl0MWoAavPDmHvobFe5R5z
 github.com/coreos/go-systemd/v22 v22.6.0/go.mod h1:iG+pp635Fo7ZmV/j14KUcmEyWF+0X7Lua8rrTWzYgWU=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/fireflycore/go-micro v0.7.3 h1:bKmDrPp8Mn8Jd6/3d1Toxp127PPiLHft1tKTrrEMoTw=
-github.com/fireflycore/go-micro v0.7.3/go.mod h1:/KXwvn/0Cj6BrgoDR183FpKH+RdjIg+P0UACVwWLzhk=
+github.com/fireflycore/go-micro v0.7.4 h1:XXEm2REaFPKtabQghqlzU7FEv6N6/1vzGZaBbz63RrA=
+github.com/fireflycore/go-micro v0.7.4/go.mod h1:/KXwvn/0Cj6BrgoDR183FpKH+RdjIg+P0UACVwWLzhk=
 github.com/fireflycore/go-utils v0.3.6 h1:Cvc6S31p5lOsJTdJMxTrF7MYod1HdsLb7kYwHIbjLYE=
 github.com/fireflycore/go-utils v0.3.6/go.mod h1:Sg9E/2bnNlSuvsO9zoobo4Qc+y7Xf/KSp3tQq+BjzBg=
 github.com/go-logr/logr v1.4.3 h1:CjnDlHq8ikf6E492q6eKboGOC0T8CDaOvkHCIg8idEI=

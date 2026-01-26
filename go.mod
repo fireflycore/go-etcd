@@ -3,7 +3,7 @@ module github.com/fireflycore/go-etcd
 go 1.25.1
 
 require (
-	github.com/fireflycore/go-micro v0.7.3
+	github.com/fireflycore/go-micro v0.7.4
 	github.com/fireflycore/go-utils v0.3.6
 	go.etcd.io/etcd/api/v3 v3.6.6
 	go.etcd.io/etcd/client/v3 v3.6.6
