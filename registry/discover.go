@@ -98,7 +98,7 @@ func NewDiscover(client *clientv3.Client, meta *micro.Meta, conf *micro.ServiceC
 // 返回:
 //   - []*micro.ServiceNode: 服务节点列表
 //   - error: 错误信息，当服务方法不存在时返回错误
-func (s *DiscoverInstance) GetService(sm string) ([]*micro.ServiceNode, error) {
+func (s *DiscoverInstance) GetService(sm string) ([]*micro.ServiceNode, string, error) {
 	// 读锁：允许并发读取，但禁止与写入并发
 	s.mu.RLock()
 
@@ -106,21 +106,21 @@ func (s *DiscoverInstance) GetService(sm string) ([]*micro.ServiceNode, error) {
 	appId, ok := s.method[sm]
 	if !ok {
 		s.mu.RUnlock()
-		return nil, micro.ErrServiceMethodNotExists
+		return nil, appId, micro.ErrServiceMethodNotExists
 	}
 
 	// 根据 appId 取出节点列表
 	nodes, ok := s.service[appId]
 	if !ok {
 		s.mu.RUnlock()
-		return nil, micro.ErrServiceNodeNotExists
+		return nil, appId, micro.ErrServiceNodeNotExists
 	}
 	// 返回 slice 的副本，避免调用方持有内部切片导致并发读写风险；节点指针本身仍共享。
 	out := append([]*micro.ServiceNode(nil), nodes...)
 
 	s.mu.RUnlock()
 
-	return out, nil
+	return out, appId, nil
 }
 
 // Watcher 启动服务发现监控。
