@@ -46,7 +46,7 @@ type RegisterInstance struct {
 // NewRegister 创建基于 etcd 的服务注册实例。
 func NewRegister(client *clientv3.Client, meta *micro.Meta, conf *micro.ServiceConf) (micro.Register, error) {
 	if client == nil {
-		return nil, fmt.Errorf(micro.ErrClientIsNil, "etcd")
+		return nil, fmt.Errorf(micro.ErrClientIsNilFormat, "etcd")
 	}
 	if meta == nil {
 		return nil, micro.ErrServiceMetaIsNil

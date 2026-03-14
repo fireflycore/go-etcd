@@ -57,7 +57,7 @@ type DiscoverInstance struct {
 //   - error: 错误信息
 func NewDiscover(client *clientv3.Client, meta *micro.Meta, conf *micro.ServiceConf) (micro.Discovery, error) {
 	if client == nil {
-		return nil, fmt.Errorf(micro.ErrClientIsNil, "etcd")
+		return nil, fmt.Errorf(micro.ErrClientIsNilFormat, "etcd")
 	}
 	if meta == nil {
 		return nil, micro.ErrServiceMetaIsNil
