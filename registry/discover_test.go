@@ -15,7 +15,7 @@ import (
 func TestDiscoverAdapterPutUsesKv(t *testing.T) {
 	ins := &DiscoverInstance{
 		meta:    &micro.Meta{Env: "prod"},
-		conf:    &micro.ServiceConf{Namespace: "test"},
+		conf:    &ServiceConf{Namespace: "test"},
 		method:  make(micro.ServiceMethod),
 		service: make(micro.ServiceDiscover),
 	}
@@ -73,7 +73,7 @@ func TestDiscoverAdapterPutUsesKv(t *testing.T) {
 func TestDiscoverMethodMapRefresh(t *testing.T) {
 	ins := &DiscoverInstance{
 		meta:    &micro.Meta{Env: "prod"},
-		conf:    &micro.ServiceConf{Namespace: "test"},
+		conf:    &ServiceConf{Namespace: "test"},
 		method:  make(micro.ServiceMethod),
 		service: make(micro.ServiceDiscover),
 	}
@@ -160,7 +160,7 @@ func TestDiscover(t *testing.T) {
 	}
 	defer cli.Close()
 
-	config := &micro.ServiceConf{
+	config := &ServiceConf{
 		Network: &micro.Network{
 			SN:       "test",
 			Internal: "127.0.0.1",

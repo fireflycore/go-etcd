@@ -12,6 +12,11 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	registerTimeout = 5 * time.Second
+	leaseTimeout    = 10 * time.Second
+)
+
 // RegisterInstance 基于 etcd 的服务注册实例
 type RegisterInstance struct {
 	// ctx/cancel 控制注册实例生命周期：
@@ -26,7 +31,7 @@ type RegisterInstance struct {
 	lease clientv3.LeaseID
 
 	meta *micro.Meta
-	conf *micro.ServiceConf
+	conf *ServiceConf
 
 	// 当前已重试次数
 	retryCount uint32
@@ -44,7 +49,7 @@ type RegisterInstance struct {
 }
 
 // NewRegister 创建基于 etcd 的服务注册实例。
-func NewRegister(client *clientv3.Client, meta *micro.Meta, conf *micro.ServiceConf) (micro.Register, error) {
+func NewRegister(client *clientv3.Client, meta *micro.Meta, conf *ServiceConf) (micro.Register, error) {
 	if client == nil {
 		return nil, fmt.Errorf(micro.ErrClientIsNilFormat, "etcd")
 	}
@@ -83,6 +88,9 @@ func (s *RegisterInstance) Install(service *micro.ServiceNode) error {
 	if service == nil {
 		return micro.ErrServiceNodeIsNil
 	}
+	if service.Methods == nil {
+		service.Methods = map[string]bool{}
+	}
 
 	// Install 负责补齐节点的运行时信息；Methods 通常由上层从 gRPC 描述解析得到
 	service.Meta = s.meta
@@ -111,12 +119,11 @@ func (s *RegisterInstance) register() error {
 		return err
 	}
 
-	ctx, cancel := context.WithTimeout(s.ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(s.ctx, registerTimeout)
 	defer cancel()
 
-	// key 结构：/{namespace}/{env}/{appId}/{leaseId}
-	// - 只要 lease 失效，etcd 会自动删除该 key，发现端会收到 delete 事件
-	key := fmt.Sprintf("%s/%s/%s/%d", s.conf.Namespace, s.meta.Env, s.meta.AppId, s.lease)
+	// 关键注释：只要 lease 失效，key 会被 etcd 自动删除，发现端即可感知节点下线。
+	key := s.buildRegisterKey()
 	_, err = s.client.Put(ctx, key, string(val), clientv3.WithLease(s.lease))
 
 	return err
@@ -128,7 +135,7 @@ func (s *RegisterInstance) Uninstall() {
 	s.cancel()
 
 	// 撤销 lease 限时
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), registerTimeout)
 	defer cancel()
 
 	// best-effort：撤销失败也不影响进程退出
@@ -152,7 +159,7 @@ func (s *RegisterInstance) WithRetryAfter(handle func()) {
 
 // initLease 初始化租约，一个带 TTL 的 lease；后续 Put 时把 key 绑定到该 lease 上
 func (s *RegisterInstance) initLease() error {
-	ctx, cancel := context.WithTimeout(s.ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(s.ctx, leaseTimeout)
 	defer cancel()
 
 	grant, err := s.client.Grant(ctx, int64(s.conf.TTL))
@@ -271,4 +278,8 @@ func (s *RegisterInstance) retryLease() bool {
 	}
 
 	return false
+}
+
+func (s *RegisterInstance) buildRegisterKey() string {
+	return fmt.Sprintf("%s/%s/%s/%d", s.conf.Namespace, s.meta.Env, s.meta.AppId, s.lease)
 }

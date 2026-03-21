@@ -26,7 +26,7 @@ func TestRegister(t *testing.T) {
 	}
 	defer cli.Close()
 
-	config := &micro.ServiceConf{
+	config := &ServiceConf{
 		Network: &micro.Network{
 			SN:       "test",
 			Internal: "127.0.0.1",

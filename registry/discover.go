@@ -30,7 +30,7 @@ type DiscoverInstance struct {
 	client *clientv3.Client
 
 	meta *micro.Meta
-	conf *micro.ServiceConf
+	conf *ServiceConf
 
 	// service 是发现的“主表”：appId -> 节点列表
 	// method 是 service 的“派生索引”：method -> appId，用于 GetService 快速定位
@@ -55,7 +55,7 @@ type DiscoverInstance struct {
 // 返回:
 //   - micro.Discovery: 服务发现接口实现
 //   - error: 错误信息
-func NewDiscover(client *clientv3.Client, meta *micro.Meta, conf *micro.ServiceConf) (micro.Discovery, error) {
+func NewDiscover(client *clientv3.Client, meta *micro.Meta, conf *ServiceConf) (micro.Discovery, error) {
 	if client == nil {
 		return nil, fmt.Errorf(micro.ErrClientIsNilFormat, "etcd")
 	}
