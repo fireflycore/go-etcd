@@ -96,7 +96,6 @@ func (s *RegisterInstance) Install(service *micro.ServiceNode) error {
 	service.Meta = s.meta
 	service.Kernel = s.conf.Kernel
 	service.Network = s.conf.Network
-	service.LeaseId = int(s.lease)
 	service.Weight = s.conf.Weight
 	service.RunDate = time.Now().Format(time.DateTime)
 
@@ -130,7 +129,7 @@ func (s *RegisterInstance) register() error {
 }
 
 // Uninstall 撤销 lease 并停止续约。
-func (s *RegisterInstance) Uninstall() {
+func (s *RegisterInstance) Uninstall() error {
 	// 先让 SustainLease 退出
 	s.cancel()
 
@@ -138,8 +137,9 @@ func (s *RegisterInstance) Uninstall() {
 	ctx, cancel := context.WithTimeout(context.Background(), registerTimeout)
 	defer cancel()
 
-	// best-effort：撤销失败也不影响进程退出
-	_, _ = s.client.Revoke(ctx, s.lease)
+	// 撤销 lease 并返回执行结果。
+	_, err := s.client.Revoke(ctx, s.lease)
+	return err
 }
 
 // WithLog 设置内部日志输出回调。
@@ -256,9 +256,6 @@ func (s *RegisterInstance) retryLease() bool {
 		// 获取新 lease 成功后，必须重新注册服务数据
 		// 因为旧 lease 过期后，数据会被 etcd 删除
 		if s.lastNode != nil {
-			// 更新 leaseId
-			s.lastNode.LeaseId = int(s.lease)
-
 			// Put 失败：继续下一轮重试
 			if err := s.register(); err != nil {
 				if s.log != nil {
