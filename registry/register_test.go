@@ -60,6 +60,5 @@ func TestRegister(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	go reg.SustainLease()
 	time.Sleep(100 * time.Millisecond)
 }
