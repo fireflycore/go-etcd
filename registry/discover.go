@@ -123,11 +123,36 @@ func (s *DiscoverInstance) GetService(sm string) ([]*micro.ServiceNode, string, 
 	return out, appId, nil
 }
 
+// Watch 启动全量监听并返回事件通道。
+// 当前实现重点是维护内部索引，因此返回的事件通道为占位通道。
+func (s *DiscoverInstance) Watch(ctx context.Context) (<-chan micro.ServiceEvent, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	events := make(chan micro.ServiceEvent)
+	go func() {
+		defer close(events)
+		done := make(chan struct{})
+		go func() {
+			s.Watcher()
+			close(done)
+		}()
+		select {
+		case <-ctx.Done():
+			s.Unwatch()
+			<-done
+		case <-done:
+		}
+	}()
+	return events, nil
+}
+
 // Watcher 启动服务发现监控。
 // 该方法会阻塞执行，持续监控 etcd 中的服务变化，通常在单独的 goroutine 中调用。
 func (s *DiscoverInstance) Watcher() {
 	// watchKey 只监听当前命名空间 + 环境：
 	// key 结构与注册侧保持一致：/{namespace}/{env}/{appId}/{leaseId}
+	// 其中实例唯一识别由 value 里的 instance_id 负责。
 	watchKey := fmt.Sprintf("%s/%s", s.conf.Namespace, s.meta.Env)
 
 	// startRev 是本次 Watch 的起始 revision：
@@ -144,7 +169,7 @@ func (s *DiscoverInstance) Watcher() {
 			// 不阻塞：继续往下创建/消费 watch 流
 		}
 
-		// WithPrevKV 让 delete 事件携带旧值（PrevKv），便于我们从 value 里解析出 appId/leaseId/methods。
+		// WithPrevKV 让 delete 事件携带旧值（PrevKv），便于我们从 value 里解析出 app_id/instance_id/methods。
 		opts := []clientv3.OpOption{clientv3.WithPrefix(), clientv3.WithPrevKV()}
 		if startRev > 0 {
 			// 从指定 revision 开始，避免漏事件/重复消费
@@ -228,7 +253,7 @@ func (s *DiscoverInstance) Unwatch() {
 
 // WithLog 设置日志记录函数
 // 参数:
-//   - handle: 日志处理函数，接收日志级别和消息内容
+//   - log: zap 日志实例
 func (s *DiscoverInstance) WithLog(log *zap.Logger) {
 	s.log = log
 }
@@ -321,18 +346,19 @@ func (s *DiscoverInstance) adapter(e *clientv3.Event) {
 	s.mu.Lock()
 	switch e.Type {
 	case clientv3.EventTypePut: // 新增或更新服务节点
-		s.upsertNodeLocked(val.Meta.AppId, &val) // 合并（按 leaseId 去重）
+		s.upsertNodeLocked(val.Meta.AppId, &val) // 合并（按 app_id+instance_id 去重）
 	case clientv3.EventTypeDelete: // 删除服务节点
-		s.deleteNodeLocked(val.Meta.AppId, &val) // 删除（按 leaseId 匹配）
+		s.deleteNodeLocked(val.Meta.AppId, &val) // 删除（按 app_id+instance_id 匹配）
 	}
 	s.mu.Unlock()
 }
 
 func (s *DiscoverInstance) upsertNodeLocked(appId string, newNode *micro.ServiceNode) {
 	nodes := s.service[appId]
-	// 过滤同 leaseId 的旧节点
+	// 这里已经在 appId 对应桶内，仅按 instance_id 去重即可，
+	// 等价于按 app_id + instance_id 识别服务实例。
 	nodes = slicex.FilterSlice(nodes, func(_ int, item *micro.ServiceNode) bool {
-		return item.LeaseId != newNode.LeaseId
+		return item.Meta.InstanceId != newNode.Meta.InstanceId
 	})
 	// 新节点放在前面，优先返回
 	s.service[appId] = append([]*micro.ServiceNode{newNode}, nodes...)
@@ -340,23 +366,24 @@ func (s *DiscoverInstance) upsertNodeLocked(appId string, newNode *micro.Service
 	s.refreshMethodsLocked(appId)
 
 	if s.log != nil {
-		s.log.Info("service updated", zap.String("appId", appId), zap.Int("leaseId", newNode.LeaseId), zap.Int("nodesCount", len(s.service[appId])))
+		s.log.Info("service updated", zap.String("appId", appId), zap.String("instanceId", newNode.Meta.InstanceId), zap.Int("nodesCount", len(s.service[appId])))
 	}
 }
 
 func (s *DiscoverInstance) deleteNodeLocked(appId string, removedNode *micro.ServiceNode) {
 	// 删除前数量
 	originalCount := len(s.service[appId])
-	// 过滤目标 leaseId
+	// 这里已经在 appId 对应桶内，仅按 instance_id 匹配删除目标实例，
+	// 等价于按 app_id + instance_id 删除。
 	s.service[appId] = slicex.FilterSlice(s.service[appId], func(_ int, item *micro.ServiceNode) bool {
-		return item.LeaseId != removedNode.LeaseId
+		return item.Meta.InstanceId != removedNode.Meta.InstanceId
 	})
 
 	if s.log != nil {
 		// 删除后的节点数
 		remainingCount := len(s.service[appId])
 		if originalCount != remainingCount {
-			s.log.Info("service removed", zap.String("appId", appId), zap.Int("leaseId", removedNode.LeaseId), zap.Int("beforeCount", originalCount), zap.Int("afterCount", remainingCount))
+			s.log.Info("service removed", zap.String("appId", appId), zap.String("instanceId", removedNode.Meta.InstanceId), zap.Int("beforeCount", originalCount), zap.Int("afterCount", remainingCount))
 		}
 	}
 

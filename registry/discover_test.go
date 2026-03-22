@@ -21,13 +21,13 @@ func TestDiscoverAdapterPutUsesKv(t *testing.T) {
 	}
 
 	oldNode := &micro.ServiceNode{
-		Meta:    &micro.Meta{Env: "prod", AppId: "svc"},
+		Meta:    &micro.Meta{Env: "prod", AppId: "svc", InstanceId: "ins-1"},
 		Methods: map[string]bool{"/svc.Svc/Ping": true},
 		Network: &micro.Network{Internal: "10.0.0.1:8080", External: "svc.example.com:80"},
 		RunDate: "2026-01-01 00:00:00",
 	}
 	newNode := &micro.ServiceNode{
-		Meta:    &micro.Meta{Env: "prod", AppId: "svc"},
+		Meta:    &micro.Meta{Env: "prod", AppId: "svc", InstanceId: "ins-1"},
 		Methods: map[string]bool{"/svc.Svc/Ping": true},
 		Network: &micro.Network{Internal: "10.0.0.1:8080", External: "svc.example.com:80"},
 		RunDate: "2026-01-02 00:00:00",
@@ -81,7 +81,7 @@ func TestDiscoverMethodMapRefresh(t *testing.T) {
 	}
 
 	n1 := &micro.ServiceNode{
-		Meta:    &micro.Meta{Env: "prod", AppId: "svc"},
+		Meta:    &micro.Meta{Env: "prod", AppId: "svc", InstanceId: "ins-1"},
 		Methods: map[string]bool{"/svc.Svc/A": true, "/svc.Svc/B": true},
 		Network: &micro.Network{Internal: "10.0.0.1:8080", External: "svc.example.com:80"},
 		RunDate: "2026-01-01 00:00:00",
@@ -99,7 +99,7 @@ func TestDiscoverMethodMapRefresh(t *testing.T) {
 	}
 
 	n1v2 := &micro.ServiceNode{
-		Meta:    &micro.Meta{Env: "prod", AppId: "svc"},
+		Meta:    &micro.Meta{Env: "prod", AppId: "svc", InstanceId: "ins-1"},
 		Methods: map[string]bool{"/svc.Svc/A": true},
 		Network: &micro.Network{Internal: "10.0.0.1:8080", External: "svc.example.com:80"},
 		RunDate: "2026-01-01 00:00:00",
@@ -120,7 +120,7 @@ func TestDiscoverMethodMapRefresh(t *testing.T) {
 	}
 
 	n2 := &micro.ServiceNode{
-		Meta:    &micro.Meta{Env: "prod", AppId: "svc"},
+		Meta:    &micro.Meta{Env: "prod", AppId: "svc", InstanceId: "ins-2"},
 		Methods: map[string]bool{"/svc.Svc/A": true, "/svc.Svc/C": true},
 		Network: &micro.Network{Internal: "10.0.0.2:8080", External: "svc2.example.com:80"},
 		RunDate: "2026-01-02 00:00:00",
