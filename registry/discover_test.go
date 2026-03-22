@@ -21,14 +21,16 @@ func TestDiscoverAdapterPutUsesKv(t *testing.T) {
 	}
 
 	oldNode := &micro.ServiceNode{
-		LeaseId: 1,
 		Meta:    &micro.Meta{Env: "prod", AppId: "svc"},
 		Methods: map[string]bool{"/svc.Svc/Ping": true},
+		Network: &micro.Network{Internal: "10.0.0.1:8080", External: "svc.example.com:80"},
+		RunDate: "2026-01-01 00:00:00",
 	}
 	newNode := &micro.ServiceNode{
-		LeaseId: 2,
 		Meta:    &micro.Meta{Env: "prod", AppId: "svc"},
 		Methods: map[string]bool{"/svc.Svc/Ping": true},
+		Network: &micro.Network{Internal: "10.0.0.1:8080", External: "svc.example.com:80"},
+		RunDate: "2026-01-02 00:00:00",
 	}
 	oldVal, err := json.Marshal(oldNode)
 	if err != nil {
@@ -49,8 +51,8 @@ func TestDiscoverAdapterPutUsesKv(t *testing.T) {
 	if !ok || len(nodes) != 1 {
 		t.Fatalf("expected 1 node, got %v", nodes)
 	}
-	if nodes[0].LeaseId != 2 {
-		t.Fatalf("expected leaseId=2, got %d", nodes[0].LeaseId)
+	if nodes[0].RunDate != "2026-01-02 00:00:00" {
+		t.Fatalf("expected latest node runDate, got %s", nodes[0].RunDate)
 	}
 	if owner := ins.method["/svc.Svc/Ping"]; owner != "svc" {
 		t.Fatalf("expected method owner=svc, got %q", owner)
@@ -79,9 +81,10 @@ func TestDiscoverMethodMapRefresh(t *testing.T) {
 	}
 
 	n1 := &micro.ServiceNode{
-		LeaseId: 1,
 		Meta:    &micro.Meta{Env: "prod", AppId: "svc"},
 		Methods: map[string]bool{"/svc.Svc/A": true, "/svc.Svc/B": true},
+		Network: &micro.Network{Internal: "10.0.0.1:8080", External: "svc.example.com:80"},
+		RunDate: "2026-01-01 00:00:00",
 	}
 	v1, err := json.Marshal(n1)
 	if err != nil {
@@ -96,9 +99,10 @@ func TestDiscoverMethodMapRefresh(t *testing.T) {
 	}
 
 	n1v2 := &micro.ServiceNode{
-		LeaseId: 1,
 		Meta:    &micro.Meta{Env: "prod", AppId: "svc"},
 		Methods: map[string]bool{"/svc.Svc/A": true},
+		Network: &micro.Network{Internal: "10.0.0.1:8080", External: "svc.example.com:80"},
+		RunDate: "2026-01-01 00:00:00",
 	}
 	v2, err := json.Marshal(n1v2)
 	if err != nil {
@@ -116,9 +120,10 @@ func TestDiscoverMethodMapRefresh(t *testing.T) {
 	}
 
 	n2 := &micro.ServiceNode{
-		LeaseId: 2,
 		Meta:    &micro.Meta{Env: "prod", AppId: "svc"},
 		Methods: map[string]bool{"/svc.Svc/A": true, "/svc.Svc/C": true},
+		Network: &micro.Network{Internal: "10.0.0.2:8080", External: "svc2.example.com:80"},
+		RunDate: "2026-01-02 00:00:00",
 	}
 	v3, err := json.Marshal(n2)
 	if err != nil {
@@ -172,13 +177,18 @@ func TestDiscover(t *testing.T) {
 		MaxRetry:  3,
 	}
 
-	dis, err := NewDiscover(cli, &micro.Meta{
+	discovery, err := NewDiscover(cli, &micro.Meta{
 		AppId:   "test-service",
 		Env:     "prod",
 		Version: "v0.0.1",
 	}, config)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	dis, ok := discovery.(*DiscoverInstance)
+	if !ok {
+		t.Fatal("expected *DiscoverInstance")
 	}
 
 	go dis.Watcher()
