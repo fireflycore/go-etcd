@@ -40,6 +40,9 @@ type DiscoverInstance struct {
 
 	log *zap.Logger
 
+	// watchEventCallback 用于向外透传服务变更事件。
+	watchEventCallback micro.WatchEventFunc
+
 	// watchRev 用于衔接 bootstrap() 与 Watcher()：
 	// - bootstrap() 通过一次 Get 拉取快照，同时拿到该次 Get 的 revision
 	// - Watcher 从 revision+1 开始 watch，尽量避免“Get 完成到 Watch 建立”之间的事件丢失
@@ -121,30 +124,6 @@ func (s *DiscoverInstance) GetService(sm string) ([]*micro.ServiceNode, string, 
 	s.mu.RUnlock()
 
 	return out, appId, nil
-}
-
-// Watch 启动全量监听并返回事件通道。
-// 当前实现重点是维护内部索引，因此返回的事件通道为占位通道。
-func (s *DiscoverInstance) Watch(ctx context.Context) (<-chan micro.ServiceEvent, error) {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-	events := make(chan micro.ServiceEvent)
-	go func() {
-		defer close(events)
-		done := make(chan struct{})
-		go func() {
-			s.Watcher()
-			close(done)
-		}()
-		select {
-		case <-ctx.Done():
-			s.Unwatch()
-			<-done
-		case <-done:
-		}
-	}()
-	return events, nil
 }
 
 // Watcher 启动服务发现监控。
@@ -251,6 +230,11 @@ func (s *DiscoverInstance) Unwatch() {
 	s.cancel()
 }
 
+// WatchEvent 注册服务变更回调。
+func (s *DiscoverInstance) WatchEvent(callback micro.WatchEventFunc) {
+	s.watchEventCallback = callback
+}
+
 // WithLog 设置日志记录函数
 // 参数:
 //   - log: zap 日志实例
@@ -343,14 +327,29 @@ func (s *DiscoverInstance) adapter(e *clientv3.Event) {
 	// 注意：这里不直接把 val.Methods 写入 method 映射表，而是把变更落到 service 后，
 	// 通过 upsert/delete 内部的 refreshMethodsLocked(appId) 统一重建 method 索引，
 	// 避免出现“节点 methods 发生缩减但 method 表仍然残留旧方法”的陈旧状态。
+	var eventType micro.EventType
+	var shouldEmit bool
+
 	s.mu.Lock()
 	switch e.Type {
 	case clientv3.EventTypePut: // 新增或更新服务节点
+		if hasServiceInstance(s.service[val.Meta.AppId], val.Meta.InstanceId) {
+			eventType = micro.EventUpdate
+		} else {
+			eventType = micro.EventAdd
+		}
 		s.upsertNodeLocked(val.Meta.AppId, &val) // 合并（按 app_id+instance_id 去重）
+		shouldEmit = true
 	case clientv3.EventTypeDelete: // 删除服务节点
+		eventType = micro.EventDelete
 		s.deleteNodeLocked(val.Meta.AppId, &val) // 删除（按 app_id+instance_id 匹配）
+		shouldEmit = true
 	}
 	s.mu.Unlock()
+
+	if shouldEmit {
+		s.emitEvent(eventType, &val)
+	}
 }
 
 func (s *DiscoverInstance) upsertNodeLocked(appId string, newNode *micro.ServiceNode) {
@@ -418,4 +417,27 @@ func (s *DiscoverInstance) refreshMethodsLocked(appId string) {
 			s.method[sm] = appId
 		}
 	}
+}
+
+func (s *DiscoverInstance) emitEvent(eventType micro.EventType, node *micro.ServiceNode) {
+	if s.watchEventCallback == nil || node == nil {
+		return
+	}
+	raw := &micro.ServiceEvent{
+		Type:    eventType,
+		Service: node,
+	}
+	go s.watchEventCallback(raw)
+}
+
+func hasServiceInstance(nodes []*micro.ServiceNode, instanceID string) bool {
+	for _, item := range nodes {
+		if item == nil || item.Meta == nil {
+			continue
+		}
+		if item.Meta.InstanceId == instanceID {
+			return true
+		}
+	}
+	return false
 }

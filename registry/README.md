@@ -60,6 +60,10 @@ func main() {
 	go disc.Watcher()
 	defer disc.Unwatch()
 
+	disc.WatchEvent(func(event *registry.ServiceEvent) {
+		_ = event
+	})
+
 	_, _ = disc.GetService("/package.Service/Method")
 }
 ```
