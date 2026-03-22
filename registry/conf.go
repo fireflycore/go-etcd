@@ -5,6 +5,7 @@ import (
 	micro "github.com/fireflycore/go-micro/registry"
 )
 
+// ServiceConf 定义 etcd 注册与发现配置。
 type ServiceConf struct {
 	// 实例Id
 	InstanceId string `json:"instance_id"`
@@ -55,6 +56,7 @@ type GatewayConf struct {
 	Network *micro.Network `json:"network"`
 }
 
+// Bootstrap 补齐网关网络配置默认值。
 func (gc *GatewayConf) Bootstrap() {
 	if gc.Network == nil {
 		gc.Network = &micro.Network{}

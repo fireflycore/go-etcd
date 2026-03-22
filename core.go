@@ -9,16 +9,20 @@ import (
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
+// New 根据配置创建 etcd v3 客户端。
 func New(c *Conf) (*clientv3.Client, error) {
+	// 配置不能为空。
 	if c == nil {
 		return nil, errors.New("etcd: conf is nil")
 	}
 
+	// 以基础拨号参数初始化客户端配置。
 	config := clientv3.Config{
 		DialTimeout: 5 * time.Second,
 		Endpoints:   c.Endpoint,
 	}
 
+	// 同时提供用户名和密码时启用认证。
 	if c.Username != "" && c.Password != "" {
 		config.Username = c.Username
 		config.Password = c.Password
@@ -43,5 +47,6 @@ func New(c *Conf) (*clientv3.Client, error) {
 		}
 	}
 
+	// 返回构建好的 etcd 客户端实例。
 	return clientv3.New(config)
 }
