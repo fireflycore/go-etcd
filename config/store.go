@@ -85,13 +85,13 @@ func (s *StoreInstance) Get(ctx context.Context, key microconfig.Key) (*microcon
 func (s *StoreInstance) GetByQuery(ctx context.Context, query microconfig.Query) (*microconfig.Item, error) {
 	// 复制基础 key，避免修改入参。
 	key := query.Key
-	// 若 key 未携带租户，则回退到 query.TenantID。
-	if key.Tenant == "" {
-		key.Tenant = query.TenantID
+	// 若 key 未携带租户，则回退到 query.TenantId。
+	if key.TenantId == "" {
+		key.TenantId = query.TenantId
 	}
-	// 若 key 未携带 appId，则回退到 query.AppID。
-	if key.AppID == "" {
-		key.AppID = query.AppID
+	// 若 key 未携带 appId，则回退到 query.AppId。
+	if key.AppId == "" {
+		key.AppId = query.AppId
 	}
 	// 复用 Get 逻辑，保持行为一致。
 	return s.Get(ctx, key)
@@ -343,14 +343,14 @@ func normalizeTenant(tenant string) string {
 // currentKey 生成 current 配置路径。
 func (s *StoreInstance) currentKey(key microconfig.Key) string {
 	return fmt.Sprintf("%s/%s/%s/%s/%s/%s/current",
-		s.namespace(), normalizeTenant(key.Tenant), key.Env, key.AppID, key.Group, key.Name,
+		s.namespace(), normalizeTenant(key.TenantId), key.Env, key.AppId, key.Group, key.Name,
 	)
 }
 
 // versionPrefix 生成版本路径前缀。
 func (s *StoreInstance) versionPrefix(key microconfig.Key) string {
 	return fmt.Sprintf("%s/%s/%s/%s/%s/%s/versions",
-		s.namespace(), normalizeTenant(key.Tenant), key.Env, key.AppID, key.Group, key.Name,
+		s.namespace(), normalizeTenant(key.TenantId), key.Env, key.AppId, key.Group, key.Name,
 	)
 }
 
@@ -362,7 +362,7 @@ func (s *StoreInstance) versionKey(key microconfig.Key, version string) string {
 // metaKey 生成元信息路径。
 func (s *StoreInstance) metaKey(key microconfig.Key) string {
 	return fmt.Sprintf("%s/%s/%s/%s/%s/%s/meta",
-		s.namespace(), normalizeTenant(key.Tenant), key.Env, key.AppID, key.Group, key.Name,
+		s.namespace(), normalizeTenant(key.TenantId), key.Env, key.AppId, key.Group, key.Name,
 	)
 }
 
@@ -428,8 +428,8 @@ func validateKey(key microconfig.Key) error {
 	if strings.TrimSpace(key.Env) == "" {
 		return microconfig.ErrInvalidKey
 	}
-	// AppID 为空时视为无效 key。
-	if strings.TrimSpace(key.AppID) == "" {
+	// AppId 为空时视为无效 key。
+	if strings.TrimSpace(key.AppId) == "" {
 		return microconfig.ErrInvalidKey
 	}
 	// Group 为空时视为无效 key。
