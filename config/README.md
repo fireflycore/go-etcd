@@ -8,6 +8,7 @@
 - 版本能力：`PutVersion/GetVersion/ListVersions`
 - 元信息能力：`GetMeta/PutMeta`
 - `Watcher`：`Watch/Unwatch`
+- `loader` 辅助：`NewStoreFromLoader`、`LoadConfigFromStore`
 
 ## 路径模型
 
@@ -21,6 +22,13 @@
 - 元信息：`/{namespace}/{tenant}/{env}/{app}/{group}/{name}/meta`
 
 当 `tenant` 为空时会回退为 `default`。
+
+## Loader 辅助
+
+当调用方已经接入 `go-micro/config` 的 `LoaderParams` / `StoreParams` 体系时，可以直接使用：
+
+- `NewStoreFromLoader`：先按 local / remote 规则加载 `etcd.Conf`，再创建 `Store`
+- `LoadConfigFromStore`：从 `Store` 读取配置并解码为目标类型
 
 ## 快速开始
 
