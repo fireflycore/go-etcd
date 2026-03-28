@@ -14,20 +14,20 @@ import (
 
 func TestDiscoverAdapterPutUsesKv(t *testing.T) {
 	ins := &DiscoverInstance{
-		meta:    &micro.Meta{Env: "prod"},
+		meta:    &micro.ServiceMeta{Env: "prod"},
 		conf:    &ServiceConf{Namespace: "test"},
 		method:  make(micro.ServiceMethod),
 		service: make(micro.ServiceDiscover),
 	}
 
 	oldNode := &micro.ServiceNode{
-		Meta:    &micro.Meta{Env: "prod", AppId: "svc", InstanceId: "ins-1"},
+		Meta:    &micro.ServiceMeta{Env: "prod", AppId: "svc", InstanceId: "ins-1"},
 		Methods: map[string]bool{"/svc.Svc/Ping": true},
 		Network: &micro.Network{Internal: "10.0.0.1:8080", External: "svc.example.com:80"},
 		RunDate: "2026-01-01 00:00:00",
 	}
 	newNode := &micro.ServiceNode{
-		Meta:    &micro.Meta{Env: "prod", AppId: "svc", InstanceId: "ins-1"},
+		Meta:    &micro.ServiceMeta{Env: "prod", AppId: "svc", InstanceId: "ins-1"},
 		Methods: map[string]bool{"/svc.Svc/Ping": true},
 		Network: &micro.Network{Internal: "10.0.0.1:8080", External: "svc.example.com:80"},
 		RunDate: "2026-01-02 00:00:00",
@@ -74,14 +74,14 @@ func TestDiscoverAdapterPutUsesKv(t *testing.T) {
 
 func TestDiscoverMethodMapRefresh(t *testing.T) {
 	ins := &DiscoverInstance{
-		meta:    &micro.Meta{Env: "prod"},
+		meta:    &micro.ServiceMeta{Env: "prod"},
 		conf:    &ServiceConf{Namespace: "test"},
 		method:  make(micro.ServiceMethod),
 		service: make(micro.ServiceDiscover),
 	}
 
 	n1 := &micro.ServiceNode{
-		Meta:    &micro.Meta{Env: "prod", AppId: "svc", InstanceId: "ins-1"},
+		Meta:    &micro.ServiceMeta{Env: "prod", AppId: "svc", InstanceId: "ins-1"},
 		Methods: map[string]bool{"/svc.Svc/A": true, "/svc.Svc/B": true},
 		Network: &micro.Network{Internal: "10.0.0.1:8080", External: "svc.example.com:80"},
 		RunDate: "2026-01-01 00:00:00",
@@ -99,7 +99,7 @@ func TestDiscoverMethodMapRefresh(t *testing.T) {
 	}
 
 	n1v2 := &micro.ServiceNode{
-		Meta:    &micro.Meta{Env: "prod", AppId: "svc", InstanceId: "ins-1"},
+		Meta:    &micro.ServiceMeta{Env: "prod", AppId: "svc", InstanceId: "ins-1"},
 		Methods: map[string]bool{"/svc.Svc/A": true},
 		Network: &micro.Network{Internal: "10.0.0.1:8080", External: "svc.example.com:80"},
 		RunDate: "2026-01-01 00:00:00",
@@ -120,7 +120,7 @@ func TestDiscoverMethodMapRefresh(t *testing.T) {
 	}
 
 	n2 := &micro.ServiceNode{
-		Meta:    &micro.Meta{Env: "prod", AppId: "svc", InstanceId: "ins-2"},
+		Meta:    &micro.ServiceMeta{Env: "prod", AppId: "svc", InstanceId: "ins-2"},
 		Methods: map[string]bool{"/svc.Svc/A": true, "/svc.Svc/C": true},
 		Network: &micro.Network{Internal: "10.0.0.2:8080", External: "svc2.example.com:80"},
 		RunDate: "2026-01-02 00:00:00",
@@ -171,13 +171,13 @@ func TestDiscover(t *testing.T) {
 			Internal: "127.0.0.1",
 			External: "127.0.0.1",
 		},
-		Kernel:    &micro.Kernel{},
+		Kernel:    &micro.ServiceKernel{},
 		Namespace: "test-namespace",
 		TTL:       10,
 		MaxRetry:  3,
 	}
 
-	discovery, err := NewDiscover(cli, &micro.Meta{
+	discovery, err := NewDiscover(cli, &micro.ServiceMeta{
 		AppId:   "test-service",
 		Env:     "prod",
 		Version: "v0.0.1",

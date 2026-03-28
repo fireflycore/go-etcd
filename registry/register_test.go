@@ -32,13 +32,13 @@ func TestRegister(t *testing.T) {
 			Internal: "127.0.0.1",
 			External: "127.0.0.1",
 		},
-		Kernel:    &micro.Kernel{},
+		Kernel:    &micro.ServiceKernel{},
 		Namespace: "test-namespace",
 		TTL:       10,
 		MaxRetry:  0,
 	}
 
-	meta := &micro.Meta{
+	meta := &micro.ServiceMeta{
 		AppId:   "test-service",
 		Env:     "prod",
 		Version: "v0.0.1",

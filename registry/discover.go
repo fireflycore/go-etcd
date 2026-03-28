@@ -29,7 +29,7 @@ type DiscoverInstance struct {
 	// client 为外部注入的 etcd v3 客户端
 	client *clientv3.Client
 
-	meta *micro.Meta
+	meta *micro.ServiceMeta
 	conf *ServiceConf
 
 	// service 是发现的“主表”：appId -> 节点列表
@@ -58,7 +58,7 @@ type DiscoverInstance struct {
 // 返回:
 //   - micro.Discovery: 服务发现接口实现
 //   - error: 错误信息
-func NewDiscover(client *clientv3.Client, meta *micro.Meta, conf *ServiceConf) (micro.Discovery, error) {
+func NewDiscover(client *clientv3.Client, meta *micro.ServiceMeta, conf *ServiceConf) (micro.Discovery, error) {
 	if client == nil {
 		return nil, fmt.Errorf(micro.ErrClientIsNilFormat, "etcd")
 	}

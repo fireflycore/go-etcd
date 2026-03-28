@@ -30,7 +30,7 @@ type RegisterInstance struct {
 	// lease 为当前服务节点绑定的租约 ID；租约存在时 key 才会保活
 	lease clientv3.LeaseID
 
-	meta *micro.Meta
+	meta *micro.ServiceMeta
 	conf *ServiceConf
 
 	// 当前已重试次数
@@ -49,7 +49,7 @@ type RegisterInstance struct {
 }
 
 // NewRegister 创建基于 etcd 的服务注册实例。
-func NewRegister(client *clientv3.Client, meta *micro.Meta, conf *ServiceConf) (micro.Register, error) {
+func NewRegister(client *clientv3.Client, meta *micro.ServiceMeta, conf *ServiceConf) (micro.Register, error) {
 	if client == nil {
 		return nil, fmt.Errorf(micro.ErrClientIsNilFormat, "etcd")
 	}
