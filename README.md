@@ -1,14 +1,10 @@
 ## go-etcd
 
-基于 etcd clientv3 的轻量封装，提供：
-- etcd client 初始化（Endpoints、可选用户名密码、可选 TLS 双向证书）
-- 基于 etcd 的轻量服务调用实现（`invocation` 子包）
+基于 etcd clientv3 的轻量封装，当前包只提供根包能力，用于创建和管理 etcd client。
 
-## 当前状态
-
-- `registry` 子包已废弃并移除
-- 若仍有旧项目依赖 etcd registry 语义，应迁移到 `go-micro/registry/agent` 或直接迁往 `invocation`
-- `go-etcd` 当前只保留 etcd 客户端能力与 `invocation` 调用能力
+- 提供 `*clientv3.Client` 初始化入口
+- 统一封装 Endpoint、认证与 TLS 参数
+- 适合作为独立基础包直接使用
 
 ## 安装
 
@@ -75,6 +71,3 @@ cli, err := etcd.New(&etcd.Conf{
 - Endpoint：etcd 节点列表（如 127.0.0.1:2379）
 - Username/Password：用户名密码（同时配置时启用）
 - Tls：TLS 双向证书配置（同时配置三个文件路径时启用）
-
-### 附件指引
-- 服务调用（invocation）[invocation/README.md](file:///Users/lhdht/product/firefly/go-etcd/invocation/README.md)
