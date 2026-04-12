@@ -10,7 +10,7 @@ import (
 )
 
 // New 根据配置创建 etcd v3 客户端。
-func New(c *Conf) (*clientv3.Client, error) {
+func New(c *Config) (*clientv3.Client, error) {
 	// 配置不能为空。
 	if c == nil {
 		return nil, errors.New("etcd: conf is nil")

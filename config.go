@@ -2,8 +2,8 @@ package etcd
 
 import "github.com/fireflycore/go-utils/tlsx"
 
-// Conf 定义 etcd 客户端初始化配置。
-type Conf struct {
+// Config 定义 etcd 客户端初始化配置。
+type Config struct {
 	// Username 是 etcd 访问用户名。
 	Username string `json:"account"`
 	// Password 是 etcd 访问密码。
